@@ -40,6 +40,27 @@ export interface JobApplication {
   tags?: string[];
 }
 
+export interface Task {
+  id: string;
+  company: string;
+  applicationLink?: string;
+  notes?: string;
+  completed: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CalendarEvent {
+  id: string;
+  title: string;
+  description?: string;
+  startTime: string;
+  endTime: string;
+  jobId?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface ThemeContextType {
   theme: 'light' | 'dark';
   toggleTheme: () => void;
