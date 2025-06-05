@@ -50,8 +50,8 @@ export interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  signup: (name: string, email: string, password: string) => Promise<void>;
-  logout: () => void;
+  signup: (email: string, password: string, metadata: { name: string }) => Promise<void>;
+  logout: () => Promise<void>;
 }
 
 export interface JobsContextType {
