@@ -41,6 +41,8 @@ const mapJobToDB = (job: Omit<JobApplication, 'id' | 'createdAt' | 'updatedAt'>)
   contact_name: job.contactName,
   contact_email: job.contactEmail,
   tags: job.tags,
+  // Add user_id when creating new jobs
+  user_id: supabase.auth.getUser().then(({ data }) => data.user?.id),
 });
 
 interface JobStore {
@@ -61,9 +63,13 @@ const useJobStore = create<JobStore>((set, get) => ({
   fetchJobs: async () => {
     set({ isLoading: true });
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
       const { data, error } = await supabase
         .from('jobs')
         .select('*')
+        .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -82,9 +88,17 @@ const useJobStore = create<JobStore>((set, get) => ({
   addJob: async (jobData) => {
     set({ isLoading: true });
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
+      const jobWithUserId = {
+        ...mapJobToDB(jobData),
+        user_id: user.id,
+      };
+
       const { data, error } = await supabase
         .from('jobs')
-        .insert([mapJobToDB(jobData)])
+        .insert([jobWithUserId])
         .select()
         .single();
 
@@ -107,10 +121,14 @@ const useJobStore = create<JobStore>((set, get) => ({
   updateJob: async (id, jobData) => {
     set({ isLoading: true });
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
       const { data, error } = await supabase
         .from('jobs')
         .update(mapJobToDB(jobData as JobApplication))
         .eq('id', id)
+        .eq('user_id', user.id)
         .select()
         .single();
 
@@ -135,10 +153,14 @@ const useJobStore = create<JobStore>((set, get) => ({
   deleteJob: async (id) => {
     set({ isLoading: true });
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
       const { error } = await supabase
         .from('jobs')
         .delete()
-        .eq('id', id);
+        .eq('id', id)
+        .eq('user_id', user.id);
 
       if (error) throw error;
 
